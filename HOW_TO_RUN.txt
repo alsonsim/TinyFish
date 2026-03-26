@@ -1,0 +1,292 @@
+╔═══════════════════════════════════════════════════════════════════════╗
+║                                                                       ║
+║         🐟 TinyFish Financial Agent - How to Run 🐟                  ║
+║                                                                       ║
+║         AI-Powered Financial Sentiment Analysis System                ║
+║                                                                       ║
+╚═══════════════════════════════════════════════════════════════════════╝
+
+📋 TABLE OF CONTENTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1. First Time Setup
+2. Daily Usage
+3. Testing
+4. Docker Deployment
+5. Troubleshooting
+
+
+═══════════════════════════════════════════════════════════════════════
+1️⃣  FIRST TIME SETUP
+═══════════════════════════════════════════════════════════════════════
+
+STEP 1: Create All Project Files
+─────────────────────────────────
+Open Command Prompt in this folder and run:
+
+    python setup_all.py
+
+This creates all 40+ project files and folders.
+
+
+STEP 2: Verify Setup
+─────────────────────
+    python verify_setup.py
+
+You should see: ✅ ALL CHECKS PASSED!
+
+
+STEP 3: Create Virtual Environment
+───────────────────────────────────
+    python -m venv venv
+
+
+STEP 4: Activate Virtual Environment
+─────────────────────────────────────
+Windows (CMD):
+    venv\Scripts\activate
+
+Windows (PowerShell):
+    venv\Scripts\Activate.ps1
+
+You should see (venv) in your prompt.
+
+
+STEP 5: Install Dependencies
+─────────────────────────────
+    pip install -r requirements.txt
+
+This installs all required Python packages.
+
+
+STEP 6: Create Configuration File
+──────────────────────────────────
+    copy .env.example .env
+    notepad .env
+
+In .env, add your API keys:
+- OPENAI_API_KEY=sk-your-actual-key-here
+- TINYFISH_API_KEY=your-actual-key-here
+
+
+STEP 7: Run Tests (Optional but Recommended)
+─────────────────────────────────────────────
+    pytest tests/ -v
+
+All tests should pass (they use mocks, so no API keys needed).
+
+
+═══════════════════════════════════════════════════════════════════════
+2️⃣  DAILY USAGE (After First Time Setup)
+═══════════════════════════════════════════════════════════════════════
+
+EVERY TIME YOU OPEN A NEW TERMINAL:
+
+Step 1: Navigate to project
+────────────────────────────
+    cd c:\Users\alson\TinyFish
+
+Step 2: Activate virtual environment
+─────────────────────────────────────
+    venv\Scripts\activate
+
+Step 3: Run the agent
+─────────────────────
+    python main.py
+
+The agent will:
+✅ Monitor configured tickers (AAPL, TSLA, NVDA, BTC, ETH by default)
+✅ Analyze sentiment from multiple sources
+✅ Generate trading signals every 5 minutes
+✅ Print signals to console
+✅ Send alerts (if configured)
+
+Press Ctrl+C to stop.
+
+
+CUSTOMIZE MONITORED TICKERS:
+
+Edit .env file:
+    DEFAULT_TICKERS=AAPL,MSFT,GOOGL,AMZN,BTC,ETH,SOL
+
+
+═══════════════════════════════════════════════════════════════════════
+3️⃣  TESTING
+═══════════════════════════════════════════════════════════════════════
+
+Run All Tests:
+──────────────
+    pytest tests/ -v
+
+
+Run with Coverage Report:
+─────────────────────────
+    pytest tests/ --cov=src --cov-report=html
+    
+Then open htmlcov/index.html in browser
+
+
+Run Specific Test:
+──────────────────
+    pytest tests/test_agent.py -v
+    pytest tests/test_sentiment.py -v
+    pytest tests/test_sources.py -v
+
+
+═══════════════════════════════════════════════════════════════════════
+4️⃣  DOCKER DEPLOYMENT (Production)
+═══════════════════════════════════════════════════════════════════════
+
+Make sure Docker Desktop is running, then:
+
+
+Start All Services:
+───────────────────
+    docker-compose up -d
+
+This starts:
+- Redis (caching)
+- Postgres (vector storage)
+- Agent (main application)
+
+
+View Logs:
+──────────
+    docker-compose logs -f agent
+
+
+Stop All Services:
+───────────────────
+    docker-compose down
+
+
+Restart Agent Only:
+────────────────────
+    docker-compose restart agent
+
+
+═══════════════════════════════════════════════════════════════════════
+5️⃣  TROUBLESHOOTING
+═══════════════════════════════════════════════════════════════════════
+
+PROBLEM: "No module named 'src'"
+SOLUTION:
+    1. Make sure you're in the TinyFish folder
+    2. Activate virtual environment: venv\Scripts\activate
+    3. Install dependencies: pip install -r requirements.txt
+
+
+PROBLEM: "OPENAI_API_KEY not found"
+SOLUTION:
+    1. Make sure .env file exists
+    2. Check that it has: OPENAI_API_KEY=sk-your-key-here
+    3. Don't use the example placeholder, use your real key
+
+
+PROBLEM: Tests failing
+SOLUTION:
+    1. Check Python version: python --version (needs 3.11+)
+    2. Reinstall dependencies: pip install -r requirements.txt --force-reinstall
+    3. Run verify_setup.py to diagnose
+
+
+PROBLEM: "redis connection failed"  
+SOLUTION:
+    Option A - Use Docker:
+        docker-compose up -d redis
+    
+    Option B - Disable caching:
+        In .env set: ENABLE_CACHING=false
+
+
+PROBLEM: Import errors after setup
+SOLUTION:
+    1. Make sure all setup scripts ran: python setup_all.py
+    2. Check files exist: python verify_setup.py
+    3. Reinstall: pip install -r requirements.txt
+
+
+═══════════════════════════════════════════════════════════════════════
+📞 QUICK HELP
+═══════════════════════════════════════════════════════════════════════
+
+Not working? Run this diagnostic:
+    python verify_setup.py
+
+Still stuck? Check these files:
+    📖 README.md - Full documentation
+    📋 INSTALLATION.md - Detailed setup guide
+    ⚡ QUICKSTART.md - Quick reference
+    📝 SETUP_SUMMARY.md - Architecture overview
+
+
+═══════════════════════════════════════════════════════════════════════
+✨ QUICK COMMAND REFERENCE
+═══════════════════════════════════════════════════════════════════════
+
+Setup (First time only):
+    python setup_all.py
+    python -m venv venv
+    venv\Scripts\activate
+    pip install -r requirements.txt
+    copy .env.example .env
+    notepad .env
+
+Daily usage:
+    cd c:\Users\alson\TinyFish
+    venv\Scripts\activate
+    python main.py
+
+Testing:
+    pytest tests/ -v
+
+Docker:
+    docker-compose up -d
+    docker-compose logs -f agent
+    docker-compose down
+
+Verify:
+    python verify_setup.py
+
+
+═══════════════════════════════════════════════════════════════════════
+🎯 WHAT DOES THE AGENT DO?
+═══════════════════════════════════════════════════════════════════════
+
+1. Scrapes financial data from:
+   - News sites (CNBC, Bloomberg)
+   - Forums (Reddit r/wallstreetbets, StockTwits)
+   - Social media (Twitter/X)
+   - Crypto sites (CoinMarketCap)
+
+2. Analyzes sentiment using OpenAI GPT-4:
+   - Bull score (0.0 - 1.0)
+   - Bear score (0.0 - 1.0)
+   - Overall sentiment (BULL/BEAR/NEUTRAL)
+
+3. Generates trading signals:
+   - Action: BUY, SELL, or HOLD
+   - Confidence level (0-100%)
+   - Reasoning
+
+4. Alerts you via:
+   - Console output (always)
+   - Discord (if configured)
+   - Slack (if configured)
+   - Telegram (if configured)
+
+
+═══════════════════════════════════════════════════════════════════════
+🚀 YOU'RE READY!
+═══════════════════════════════════════════════════════════════════════
+
+To get started right now:
+
+1. python setup_all.py
+2. Create virtual env and activate it
+3. pip install -r requirements.txt
+4. Configure .env with your API keys
+5. python main.py
+
+That's it! 🎉
+
+Happy trading! 📈🐟
