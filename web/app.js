@@ -16,12 +16,21 @@ const sourcePill = document.getElementById("source-pill");
 const tickerBreakdown = document.getElementById("ticker-breakdown");
 
 function setStatus(message, tone) {
-  statusBanner.textContent = message;
-  statusBanner.className = `status-banner ${tone}`;
+  statusBanner.style.animation = 'none';
+  setTimeout(() => {
+    statusBanner.textContent = message;
+    statusBanner.className = `status-banner ${tone}`;
+    statusBanner.style.animation = 'slideDown 0.4s ease-out';
+  }, 10);
 }
 
 function updateQuickPick(value) {
   tickersInput.value = value;
+  tickersInput.style.transform = 'scale(1.02)';
+  setTimeout(() => {
+    tickersInput.style.transition = 'transform 0.2s ease';
+    tickersInput.style.transform = 'scale(1)';
+  }, 100);
   tickersInput.focus();
 }
 
@@ -95,7 +104,8 @@ function renderTickerBreakdown(payload) {
     return;
   }
 
-  entries.forEach(([ticker, details]) => {
+  entries.forEach(([ticker, details], entryIndex) => {
+    setTimeout(() => {
     const section = document.createElement("section");
     section.className = "ticker-panel";
 
@@ -152,24 +162,68 @@ function renderTickerBreakdown(payload) {
       section.appendChild(neutralBlock);
     }
 
+    section.style.opacity = '0';
+    section.style.transform = 'translateY(20px)';
     tickerBreakdown.appendChild(section);
+    
+    setTimeout(() => {
+      section.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+      section.style.opacity = '1';
+      section.style.transform = 'translateY(0)';
+    }, 50);
+    }, entryIndex * 150);
   });
 }
 
 function renderResult(payload) {
   const { signal } = payload;
-  signalTitle.textContent = `${signal.action} signal ready`;
+  
+  // Animate the signal title update
+  signalTitle.style.opacity = '0';
+  setTimeout(() => {
+    signalTitle.textContent = `${signal.action} signal ready`;
+    signalTitle.style.opacity = '1';
+    signalTitle.style.transition = 'opacity 0.4s ease';
+  }, 200);
+  
   resultGrid.classList.remove("hidden");
-  signalAction.textContent = signal.action;
-  signalConfidence.textContent = `${(signal.confidence * 100).toFixed(1)}%`;
-  signalTickers.textContent = signal.ticker;
-  signalTime.textContent = new Date(signal.timestamp).toLocaleString();
+  
+  // Animate metrics with stagger
+  const metrics = [
+    { elem: signalAction, value: signal.action },
+    { elem: signalConfidence, value: `${(signal.confidence * 100).toFixed(1)}%` },
+    { elem: signalTickers, value: signal.ticker },
+    { elem: signalTime, value: new Date(signal.timestamp).toLocaleString() }
+  ];
+  
+  metrics.forEach((metric, index) => {
+    setTimeout(() => {
+      metric.elem.style.opacity = '0';
+      metric.elem.style.transform = 'translateY(10px)';
+      setTimeout(() => {
+        metric.elem.textContent = metric.value;
+        metric.elem.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+        metric.elem.style.opacity = '1';
+        metric.elem.style.transform = 'translateY(0)';
+      }, 50);
+    }, index * 80);
+  });
 
   reasonsList.innerHTML = "";
-  signal.reasons.forEach((reason) => {
-    const item = document.createElement("li");
-    item.textContent = reason;
-    reasonsList.appendChild(item);
+  signal.reasons.forEach((reason, index) => {
+    setTimeout(() => {
+      const item = document.createElement("li");
+      item.textContent = reason;
+      item.style.opacity = '0';
+      item.style.transform = 'translateX(-10px)';
+      reasonsList.appendChild(item);
+      
+      setTimeout(() => {
+        item.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+        item.style.opacity = '1';
+        item.style.transform = 'translateX(0)';
+      }, 50);
+    }, index * 100);
   });
 
   renderTickerBreakdown(payload);
@@ -180,6 +234,11 @@ function renderResult(payload) {
     `${signal.action} with ${(signal.confidence * 100).toFixed(1)}% confidence for ${signal.ticker}.`,
     tone,
   );
+  
+  // Smooth scroll to results
+  setTimeout(() => {
+    document.querySelector('.result-card').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }, 400);
 }
 
 async function submitAnalysis(event) {
@@ -195,7 +254,7 @@ async function submitAnalysis(event) {
   }
 
   submitButton.disabled = true;
-  submitButton.textContent = "Analyzing...";
+  submitButton.innerHTML = '<span>Analyzing...</span>';
   setStatus("Using TinyFish to collect Yahoo Finance SG and Bloomberg Asia coverage...", "loading");
 
   try {
@@ -217,7 +276,7 @@ async function submitAnalysis(event) {
     setStatus(error.message, "error");
   } finally {
     submitButton.disabled = false;
-    submitButton.textContent = "Analyze";
+    submitButton.innerHTML = '<span>Analyze</span>';
   }
 }
 

@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>TinyFish Market Sentiment</title>
   <link rel="stylesheet" href="/styles.css">
+  <meta name="description" content="Real-time market sentiment analysis using Yahoo Finance and Bloomberg data">
 </head>
 <body>
   <div class="page-shell">
@@ -41,12 +42,14 @@
           <h2>Scan the market for a ticker</h2>
         </div>
         <form id="analyze-form" class="analyze-form">
-          <label for="tickers" class="input-label">Tickers</label>
+          <label for="tickers" class="input-label">Tickers (Comma-separated)</label>
           <div class="input-row">
-            <input id="tickers" name="tickers" type="text" placeholder="AAPL, NVDA, TSLA" autocomplete="off">
-            <button id="submit-button" type="submit">Analyze</button>
+            <input id="tickers" name="tickers" type="text" placeholder="e.g., AAPL, NVDA, TSLA" autocomplete="off" required>
+            <button id="submit-button" type="submit">
+              <span>Analyze</span>
+            </button>
           </div>
-          <p class="helper-text">Comma-separated symbols. The site will gather Yahoo Finance SG and Bloomberg Asia coverage for each.</p>
+          <p class="helper-text">Enter symbols to gather Yahoo Finance SG and Bloomberg Asia coverage</p>
         </form>
         <div class="quick-picks">
           <button class="chip" data-tickers="AAPL,NVDA,TSLA">Mega Caps</button>
@@ -97,15 +100,18 @@
         </div>
       </section>
 
-      <section class="card output-card">
-        <div class="card-header">
-          <p class="section-tag">Structured Output</p>
-          <h2>Signal payload</h2>
-        </div>
+      <details class="card output-card">
+        <summary class="card-header collapsible-header">
+          <div>
+            <p class="section-tag">Developer Output</p>
+            <h3>Raw JSON payload</h3>
+          </div>
+          <span class="toggle-icon">▼</span>
+        </summary>
         <pre id="json-output" class="json-output">{
   "message": "Run an analysis to populate this panel."
 }</pre>
-      </section>
+      </details>
     </main>
   </div>
 

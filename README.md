@@ -1,15 +1,15 @@
-# TinyFish Financial Agent 🐟📈
+# TinyFish Financial Agent
 
 An AI-powered financial sentiment analysis agent that combines TinyFish browser automation with OpenAI's GPT-4 to monitor real-time market sentiment across news, social media, and crypto platforms.
 
 ## Features
 
-- 🤖 **Autonomous Web Scraping**: TinyFish-powered browser automation for dynamic content
-- 🧠 **AI Sentiment Analysis**: OpenAI GPT-4 sentiment extraction and scoring
-- 📊 **Multi-Source Monitoring**: CNBC, Bloomberg, Reddit, Twitter, CoinMarketCap, and more
-- 📡 **Trading Signals**: Actionable BUY/SELL/HOLD signals with confidence scores
-- ⚡ **Real-time Alerts**: Discord, Slack, and Telegram notifications
-- 🗄️ **Vector Storage**: Redis + Postgres for historical sentiment tracking
+- **Autonomous Web Scraping**: TinyFish-powered browser automation for dynamic content
+- **AI Sentiment Analysis**: OpenAI GPT-4 sentiment extraction and scoring
+- **Multi-Source Monitoring**: CNBC, Bloomberg, Reddit, Twitter, CoinMarketCap, and more
+- **Trading Signals**: Actionable BUY/SELL/HOLD signals with confidence scores
+- **Real-time Alerts**: Discord, Slack, and Telegram notifications
+- **Vector Storage**: Redis + Postgres for historical sentiment tracking
 
 ## Architecture
 
@@ -218,14 +218,14 @@ MIT License - see [LICENSE](LICENSE) file for details.
 
 ## Disclaimer
 
-⚠️ **This tool is for educational purposes only. Not financial advice. Always do your own research before making investment decisions.**
+**WARNING: This tool is for educational purposes only. Not financial advice. Always do your own research before making investment decisions.**
 
 ## Support
 
-- 📧 Email: support@tinyfish-agent.com
-- 💬 Discord: [Join our community](https://discord.gg/...)
-- 📝 Issues: [GitHub Issues](https://github.com/yourusername/tinyfish-financial-agent/issues)
+- Email: support@tinyfish-agent.com
+- Discord: [Join our community](https://discord.gg/...)
+- Issues: [GitHub Issues](https://github.com/yourusername/tinyfish-financial-agent/issues)
 
 ---
 
-Built with ❤️ using [TinyFish](https://tinyfish.ai) & [OpenAI](https://openai.com)
+Built using [TinyFish](https://tinyfish.ai) & [OpenAI](https://openai.com)
