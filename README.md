@@ -1,231 +1,139 @@
 # TinyFish Financial Agent
 
-An AI-powered financial sentiment analysis agent that combines TinyFish browser automation with OpenAI's GPT-4 to monitor real-time market sentiment across news, social media, and crypto platforms.
+TinyFish Financial Agent is a local market-sentiment dashboard that combines TinyFish browser automation, OpenAI-backed analysis, and a lightweight web UI to turn news coverage into trading signals, watchlist updates, portfolio views, alerts, and conversational summaries.
 
-## Features
+## What It Does
 
-- **Autonomous Web Scraping**: TinyFish-powered browser automation for dynamic content
-- **AI Sentiment Analysis**: OpenAI GPT-4 sentiment extraction and scoring
-- **Multi-Source Monitoring**: CNBC, Bloomberg, Reddit, Twitter, CoinMarketCap, and more
-- **Trading Signals**: Actionable BUY/SELL/HOLD signals with confidence scores
-- **Real-time Alerts**: Discord, Slack, and Telegram notifications
-- **Vector Storage**: Redis + Postgres for historical sentiment tracking
+- Runs one-shot sentiment scans for comma-separated ticker symbols.
+- Collects and normalizes market news, with the current agent prioritizing Yahoo Finance Singapore and Bloomberg Asia.
+- Uses OpenAI when available for planning, sentiment extraction, and chat responses.
+- Converts bullish and bearish evidence into BUY, SELL, or HOLD signals with confidence and reasons.
+- Stores historical analysis in a local SQLite database for charts and later review.
+- Tracks watchlists, portfolio holdings, alert rules, and chat history in the dashboard.
+- Refreshes watchlists in the background and checks alerts automatically.
 
-## Architecture
+## How It Flows
 
-```
-┌─────────────────┐
-│  TinyFish Agent │
-│   Orchestrator  │
-└────────┬────────┘
-         │
-    ┌────┴────┬──────────┬──────────┐
-    │         │          │          │
-┌───▼───┐ ┌──▼──┐ ┌─────▼────┐ ┌───▼───┐
-│ News  │ │Forum│ │  Social  │ │Crypto │
-│Sources│ │ API │ │ Scraping │ │ APIs  │
-└───┬───┘ └──┬──┘ └─────┬────┘ └───┬───┘
-    │        │          │          │
-    └────────┴──────────┴──────────┘
-                  │
-           ┌──────▼──────┐
-           │   OpenAI    │
-           │  Sentiment  │
-           │   Analysis  │
-           └──────┬──────┘
-                  │
-           ┌──────▼──────┐
-           │   Trading   │
-           │   Signals   │
-           └─────────────┘
+```text
+Tickers -> Planner -> TinyFishExecutor -> News sources -> SentimentAnalyzer -> SignalGenerator -> Dashboard/API
+                                                    \-> SQLite history, watchlist, portfolio, alerts, chat
 ```
 
-## Quick Start
+## Requirements
 
-### Prerequisites
+- Python 3.10 or newer.
+- `pip` for installing dependencies.
+- `OPENAI_API_KEY` for model-backed planning, analysis, and chat.
+- `TINYFISH_API_KEY` for full TinyFish automation coverage.
 
-- Python 3.11+
-- Docker & Docker Compose (optional)
-- OpenAI API Key
-- TinyFish API Key
+Optional integrations:
 
-### Installation
+- `DISCORD_WEBHOOK`, `SLACK_WEBHOOK`, `TELEGRAM_BOT_TOKEN`, and `TELEGRAM_CHAT_ID` for alert delivery.
+- `REDIS_URL` and `POSTGRES_URL` if you want to wire up the optional storage settings used by the codebase.
 
-```bash
-# Clone repository
-git clone https://github.com/yourusername/tinyfish-financial-agent.git
-cd tinyfish-financial-agent
+## Setup
 
-# Install dependencies
-pip install -r requirements.txt
+From the project root:
 
-# Configure environment
-cp .env.example .env
-# Edit .env with your API keys
+```powershell
+python -m pip install -r requirements.txt
 ```
 
-### Configuration
+Create or update your `.env` file with the settings you want to use. The app reads environment variables case-insensitively.
 
-Edit `.env` with your credentials:
+### Key Environment Variables
 
-```env
-OPENAI_API_KEY=sk-...
-TINYFISH_API_KEY=...
-REDIS_URL=redis://localhost:6379
-DISCORD_WEBHOOK=https://discord.com/api/webhooks/...
-```
+- `OPENAI_API_KEY`: Enables OpenAI planning, sentiment analysis, and chat.
+- `OPENAI_MODEL`: Model name used by the planner, analyzer, and chatbot.
+- `TINYFISH_API_KEY`: Enables TinyFish browser automation.
+- `TINYFISH_HEADLESS`: Uses headless browser mode when `true`.
+- `DEFAULT_TICKERS`: Comma-separated tickers shown on dashboard load.
+- `SENTIMENT_THRESHOLD`: Threshold used when turning scores into BUY or SELL signals.
+- `SCAN_INTERVAL`: Background scan interval in seconds.
+- `LOG_LEVEL`: Logging level.
+- `LOG_FORMAT`: Logging format.
+- `ENABLE_CACHING`: Enables cache-related code paths.
+- `ENABLE_VECTOR_STORAGE`: Enables vector-storage-related code paths.
+- `ENABLE_ALERTS`: Enables alert-related code paths.
+- `OFFLINE_MODE`: Enables reduced-connectivity behavior where supported.
 
-### Running the Agent
+## Run The App
 
-#### Development Mode
+Start the local dashboard server:
 
-```bash
-# Start development environment
-./scripts/dev.sh
-
-# Or manually
-python -m pytest tests/
-python -m src.agent.core
-```
-
-#### Production (Docker)
-
-```bash
-docker-compose up -d
-```
-
-#### Web Dashboard
-
-```bash
+```powershell
 python webapp.py
 ```
 
-Open `http://127.0.0.1:8080` in your browser to use the local dashboard.
-It lets you enter ticker symbols, run a one-shot scan, and inspect the
-generated action, confidence, reasons, and JSON payload.
+The server starts on `http://127.0.0.1:8080` by default, and you can override the bind address if needed:
 
-## Usage
-
-### Basic Sentiment Analysis
-
-```python
-from src.agent.core import FinancialAgent
-from src.data.models import TradingSignal
-
-# Initialize agent
-agent = FinancialAgent(
-    openai_api_key="sk-...",
-    tinyfish_key="..."
-)
-
-# Monitor sentiment for specific tickers
-signal = await agent.monitor_sentiment(["AAPL", "TSLA", "BTC"])
-
-print(f"Signal: {signal.action}")
-print(f"Confidence: {signal.confidence}")
-print(f"Reasons: {signal.reasons}")
+```powershell
+python webapp.py --host 127.0.0.1 --port 8080
 ```
 
-### Custom Source Configuration
+On startup, the app also launches the background worker that refreshes the watchlist every 15 minutes and checks alerts every 5 minutes.
 
-```python
-from src.sources.news import CNBCSource, BloombergSource
-from src.sentiment.analyzer import SentimentAnalyzer
+## Dashboard Features
 
-# Configure sources
-sources = [
-    CNBCSource(),
-    BloombergSource(),
-    RedditSource(subreddits=["wallstreetbets", "stocks"])
-]
+- Watchlist: add and remove tickers, then let the background worker refresh them automatically.
+- Run Analysis: scan one or more tickers and view the resulting action, confidence, and rationale.
+- Historical Trends: inspect sentiment history over time in the built-in chart.
+- Developer Output: expand the raw JSON payload for debugging or integration work.
+- Chat: ask natural-language questions about tickers, watchlists, or recent sentiment.
+- Portfolio: add holdings with quantities and view aggregated sentiment plus a risk indicator.
+- Alerts: create sentiment-based alerts using bull score, bear score, or confidence thresholds.
+- Dark Mode: toggle the UI theme from the floating control in the lower-right corner.
 
-# Analyze
-analyzer = SentimentAnalyzer(openai_api_key="sk-...")
-sentiment = await analyzer.analyze_ticker("AAPL", sources)
-```
+## API Endpoints
+
+- `POST /api/analyze` - Run a sentiment analysis request.
+- `GET /api/history/<TICKER>?days=N` - Load historical sentiment data.
+- `POST /api/watchlist` - Fetch the current watchlist.
+- `POST /api/watchlist/add` - Add a ticker to the watchlist.
+- `POST /api/watchlist/remove` - Remove a ticker from the watchlist.
+- `GET /api/portfolio` - Fetch portfolio holdings and aggregated sentiment.
+- `POST /api/portfolio/add` - Add a portfolio holding.
+- `POST /api/portfolio/remove` - Remove a portfolio holding.
+- `GET /api/alerts` - List alert rules and alert state.
+- `POST /api/alerts/add` - Create an alert rule.
+- `POST /api/alerts/remove` - Delete an alert rule.
+- `POST /api/chat` - Send a chat message and get an AI response.
+- `GET /api/health` - Check system status and enabled integrations.
+
+## Data And Storage
+
+- The app uses a local SQLite database named `tinyfish.db`.
+- The schema is created automatically on first run.
+- Stored records include sentiment history, watchlist items, portfolios, holdings, alert rules, alert history, saved searches, search history, preferences, chat history, and source reliability data.
 
 ## Project Structure
 
-```
-tinyfish-financial-agent/
-├── src/
-│   ├── agent/          # Core agent orchestration
-│   ├── sources/        # Data source scrapers
-│   ├── sentiment/      # Sentiment analysis & signals
-│   ├── data/           # Models, storage, caching
-│   ├── trading/        # Signal generation & alerts
-│   └── utils/          # Configuration, logging, types
-├── tests/              # Unit & integration tests
-├── scripts/            # Development & deployment scripts
-└── docker-compose.yml  # Production infrastructure
-```
-
-## Development
-
-### Running Tests
-
-```bash
-pytest tests/ -v --cov=src
+```text
+TinyFish/
+├── webapp.py
+├── web/
+│   ├── index.html
+│   ├── app.js
+│   └── styles.css
+└── src/
+    ├── agent/
+    ├── chat/
+    ├── data/
+    ├── scheduler.py
+    ├── sentiment/
+    ├── sources/
+    ├── trading/
+    ├── utils/
+    └── worker.py
 ```
 
-### Code Quality
+## Notes
 
-```bash
-# Format code
-black src/ tests/
-
-# Type checking
-mypy src/
-
-# Linting
-ruff src/ tests/
-```
-
-## API Reference
-
-### FinancialAgent
-
-Main orchestrator class for sentiment monitoring.
-
-**Methods:**
-- `monitor_sentiment(tickers: list[str]) -> TradingSignal`
-- `analyze_source(source: str, ticker: str) -> SentimentScore`
-- `generate_alert(signal: TradingSignal) -> None`
-
-### SentimentAnalyzer
-
-OpenAI-powered sentiment extraction.
-
-**Methods:**
-- `analyze_text(text: str, ticker: str) -> SentimentScore`
-- `batch_analyze(texts: list[str]) -> list[SentimentScore]`
-
-## Roadmap
-
-- [ ] WebSocket streaming for real-time alerts
-- [ ] Multi-model ensemble (GPT-4 + Claude + Llama)
-- [ ] Backtesting framework
-- [ ] Portfolio optimization
-- [ ] Technical indicator integration
-
-## Contributing
-
-Contributions welcome! Please read our [Contributing Guide](CONTRIBUTING.md).
-
-## License
-
-MIT License - see [LICENSE](LICENSE) file for details.
+- If `OPENAI_API_KEY` is missing, the planner, sentiment analyzer, and chatbot fall back to heuristic or simplified behavior where possible.
+- If `TINYFISH_API_KEY` is missing, browser automation is disabled, but some source modules can still attempt direct HTTP fetching.
+- The main agent currently prioritizes Yahoo Finance Singapore and Bloomberg Asia as its news inputs.
+- The dashboard is intentionally local-first and does not require an external database server to start.
 
 ## Disclaimer
 
-**WARNING: This tool is for educational purposes only. Not financial advice. Always do your own research before making investment decisions.**
-
-## Support
-
-- Email: support@tinyfish-agent.com
-- Discord: [Join our community](https://discord.gg/...)
-- Issues: [GitHub Issues](https://github.com/yourusername/tinyfish-financial-agent/issues)
-
----
-
-Built using [TinyFish](https://tinyfish.ai) & [OpenAI](https://openai.com)
+This project is for informational and educational use only. It is not financial advice. Always verify outputs independently before making investment decisions.
