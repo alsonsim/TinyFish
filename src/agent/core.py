@@ -70,6 +70,14 @@ class FinancialAgent:
         signal = await self.signal_generator.generate(scores, tickers)
         per_ticker = self._build_ticker_breakdown(tickers, data, scores)
 
+        # Auto-store results in history
+        try:
+            from src.data.history import get_sentiment_history
+            history = get_sentiment_history()
+            history.store_analysis(signal, scores)
+        except Exception as exc:
+            self.logger.warning("history_storage_failed", error=str(exc))
+
         self.logger.info(
             "monitoring_complete",
             action=signal.action,

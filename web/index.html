@@ -5,9 +5,21 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>TinyFish Market Sentiment</title>
   <link rel="stylesheet" href="/styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <meta name="description" content="Real-time market sentiment analysis using Yahoo Finance and Bloomberg data">
 </head>
 <body>
+  <!-- Stock Ticker Conveyor Belt -->
+  <div class="ticker-tape">
+    <div class="ticker-track" id="tickerTrack">
+      <div class="ticker-item">
+        <span class="ticker-symbol">Loading...</span>
+        <span class="ticker-price">--</span>
+        <span class="ticker-change">--</span>
+      </div>
+    </div>
+  </div>
+
   <div class="page-shell">
     <header class="hero">
       <div class="hero-copy">
@@ -36,6 +48,20 @@
     </header>
 
     <main class="dashboard">
+      <section class="card watchlist-card">
+        <div class="card-header">
+          <p class="section-tag">Watchlist</p>
+          <h2>Monitored tickers</h2>
+        </div>
+        <div class="watchlist-input">
+          <input id="watchlist-ticker" type="text" placeholder="Add ticker to watchlist" maxlength="10">
+          <button id="add-watchlist-btn" type="button">Add</button>
+        </div>
+        <div id="watchlist-items" class="watchlist-items">
+          <p class="empty-state">No tickers in watchlist yet.</p>
+        </div>
+      </section>
+
       <section class="card control-card">
         <div class="card-header">
           <p class="section-tag">Run Analysis</p>
@@ -100,6 +126,21 @@
         </div>
       </section>
 
+      <section class="card chart-card">
+        <div class="card-header">
+          <p class="section-tag">Historical Trends</p>
+          <h2>Sentiment over time</h2>
+        </div>
+        <div class="chart-container">
+          <canvas id="sentiment-chart"></canvas>
+        </div>
+        <div class="chart-controls">
+          <button class="chart-btn" data-days="7">7D</button>
+          <button class="chart-btn active" data-days="30">30D</button>
+          <button class="chart-btn" data-days="90">90D</button>
+        </div>
+      </section>
+
       <details class="card output-card">
         <summary class="card-header collapsible-header">
           <div>
@@ -112,7 +153,82 @@
   "message": "Run an analysis to populate this panel."
 }</pre>
       </details>
+
+      <section class="card chat-card">
+        <div class="card-header">
+          <p class="section-tag">AI Assistant</p>
+          <h2>Chat about market sentiment</h2>
+        </div>
+        <div id="chat-messages" class="chat-messages">
+          <div class="chat-message bot-message">
+            <div class="message-content">
+              Hi! I can help you analyze market sentiment. Ask me about any ticker, compare stocks, or check your watchlist.
+            </div>
+          </div>
+        </div>
+        <div class="chat-input-area">
+          <input id="chat-input" type="text" placeholder="Ask about any ticker... (e.g., 'What's AAPL sentiment?')" />
+          <button id="chat-send-btn" type="button">Send</button>
+        </div>
+      </section>
+
+      <section class="card portfolio-card">
+        <div class="card-header">
+          <p class="section-tag">Portfolio</p>
+          <h2>Track your holdings</h2>
+        </div>
+        <div class="portfolio-input">
+          <input id="portfolio-ticker" type="text" placeholder="Ticker" maxlength="10">
+          <input id="portfolio-quantity" type="number" placeholder="Quantity" min="0.01" step="0.01">
+          <button id="add-portfolio-btn" type="button">Add Holding</button>
+        </div>
+        <div id="portfolio-summary" class="portfolio-summary hidden">
+          <div class="portfolio-metric">
+            <span>Aggregated Sentiment</span>
+            <strong id="portfolio-sentiment">-</strong>
+          </div>
+          <div class="portfolio-metric">
+            <span>Portfolio Risk</span>
+            <strong id="portfolio-risk">-</strong>
+          </div>
+        </div>
+        <div id="portfolio-items" class="portfolio-items">
+          <p class="empty-state">No holdings yet.</p>
+        </div>
+      </section>
+
+      <section class="card alerts-card">
+        <div class="card-header">
+          <p class="section-tag">Alerts</p>
+          <h2>Configure sentiment alerts</h2>
+        </div>
+        <div class="alert-input">
+          <input id="alert-ticker" type="text" placeholder="Ticker" maxlength="10">
+          <select id="alert-condition">
+            <option value="bull_above">Bull Score Above</option>
+            <option value="bear_above">Bear Score Above</option>
+            <option value="confidence_above">Confidence Above</option>
+          </select>
+          <input id="alert-threshold" type="number" placeholder="Threshold (0-1)" min="0" max="1" step="0.01" value="0.7">
+          <button id="add-alert-btn" type="button">Create Alert</button>
+        </div>
+        <div id="alert-items" class="alert-items">
+          <p class="empty-state">No alerts configured.</p>
+        </div>
+      </section>
     </main>
+
+    <button id="dark-mode-toggle" class="dark-mode-toggle" title="Toggle dark mode">
+      <span class="theme-icon">🌙</span>
+    </button>
+  </div>
+
+  <div id="article-modal" class="modal hidden">
+    <div class="modal-content">
+      <button class="modal-close" id="modal-close-btn">&times;</button>
+      <h2 id="modal-title">Article Details</h2>
+      <div id="modal-body" class="modal-body"></div>
+    </div>
   </div>
 
   <script src="/app.js"></script>
