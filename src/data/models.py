@@ -13,6 +13,9 @@ class SentimentScore(BaseModel):
     bear_score: float = Field(..., ge=0.0, le=1.0, description="Bearish sentiment score")
     sentiment: Literal["BULL", "BEAR", "NEUTRAL"] = Field(..., description="Overall sentiment classification")
     reasons: list[str] = Field(default_factory=list, description="Key reasons for the sentiment")
+    bullish_points: list[str] = Field(default_factory=list, description="Bullish evidence gathered from the news set")
+    bearish_points: list[str] = Field(default_factory=list, description="Bearish evidence gathered from the news set")
+    summary: str = Field(default="", description="Short narrative summary of the sentiment call")
     timestamp: datetime = Field(default_factory=datetime.utcnow, description="Analysis timestamp")
     
     class Config:
@@ -82,6 +85,8 @@ class SourceData(BaseModel):
     title: str | None = Field(None, description="Article/post title")
     text: str = Field(..., description="Main content text")
     url: str = Field(..., description="Source URL")
+    stance: Literal["bullish", "bearish", "neutral"] = Field(default="neutral", description="Per-item stance classification")
+    rationale: str = Field(default="", description="Why the item was classified with its stance")
     timestamp: datetime = Field(default_factory=datetime.utcnow, description="Collection timestamp")
     metadata: dict = Field(default_factory=dict, description="Additional metadata")
 

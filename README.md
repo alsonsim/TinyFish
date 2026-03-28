@@ -94,6 +94,16 @@ python -m src.agent.core
 docker-compose up -d
 ```
 
+#### Web Dashboard
+
+```bash
+python webapp.py
+```
+
+Open `http://127.0.0.1:8080` in your browser to use the local dashboard.
+It lets you enter ticker symbols, run a one-shot scan, and inspect the
+generated action, confidence, reasons, and JSON payload.
+
 ## Usage
 
 ### Basic Sentiment Analysis
