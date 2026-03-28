@@ -1,7 +1,8 @@
 """Trading signal formatting and output."""
 
+from __future__ import annotations
+
 import structlog
-from datetime import datetime
 
 from src.data.models import TradingSignal
 
@@ -9,81 +10,42 @@ logger = structlog.get_logger(__name__)
 
 
 class SignalFormatter:
-    """
-    Formats trading signals for various outputs.
-    
-    Example:
-        >>> formatter = SignalFormatter()
-        >>> text = formatter.to_text(signal)
-        >>> json_str = formatter.to_json(signal)
-    """
-    
+    """Formats trading signals for terminal, JSON, and Markdown output."""
+
     def __init__(self) -> None:
         self.logger = logger.bind(component="signal_formatter")
-    
+
     def to_text(self, signal: TradingSignal) -> str:
-        """
-        Format signal as plain text.
-        
-        Args:
-            signal: Trading signal to format
-        
-        Returns:
-            Formatted text string
-        """
-        emoji = {"BUY": "🟢", "SELL": "🔴", "HOLD": "🟡"}[signal.action]
-        
-        text = f"""
-{emoji} TRADING SIGNAL {emoji}
+        """Format a signal for terminal output."""
+        marker = {"BUY": "[+]", "SELL": "[-]", "HOLD": "[=]"}[signal.action]
+        lines = [
+            f"{marker} TRADING SIGNAL {marker}",
+            "",
+            f"Ticker: {signal.ticker}",
+            f"Action: {signal.action}",
+            f"Confidence: {signal.confidence:.1%}",
+            f"Time: {signal.timestamp.strftime('%Y-%m-%d %H:%M:%S UTC')}",
+            "",
+            "Reasons:",
+        ]
+        lines.extend(f"{index}. {reason}" for index, reason in enumerate(signal.reasons, 1))
+        return "\n".join(lines).strip()
 
-Ticker: {signal.ticker}
-Action: {signal.action}
-Confidence: {signal.confidence:.1%}
-Time: {signal.timestamp.strftime("%Y-%m-%d %H:%M:%S UTC")}
-
-Reasons:
-"""
-        for i, reason in enumerate(signal.reasons, 1):
-            text += f"{i}. {reason}
-"
-        
-        return text.strip()
-    
     def to_json(self, signal: TradingSignal) -> str:
-        """
-        Format signal as JSON.
-        
-        Args:
-            signal: Trading signal to format
-        
-        Returns:
-            JSON string
-        """
+        """Format a signal as JSON."""
         return signal.model_dump_json(indent=2)
-    
+
     def to_markdown(self, signal: TradingSignal) -> str:
-        """
-        Format signal as Markdown.
-        
-        Args:
-            signal: Trading signal to format
-        
-        Returns:
-            Markdown formatted string
-        """
-        emoji = {"BUY": "🟢", "SELL": "🔴", "HOLD": "🟡"}[signal.action]
-        
-        md = f"""# {emoji} Trading Signal: {signal.action}
-
-**Ticker:** `{signal.ticker}`  
-**Confidence:** {signal.confidence:.1%}  
-**Time:** {signal.timestamp.strftime("%Y-%m-%d %H:%M:%S UTC")}
-
-## Reasons
-
-"""
-        for reason in signal.reasons:
-            md += f"- {reason}
-"
-        
-        return md.strip()
+        """Format a signal for webhook or Markdown display."""
+        lines = [
+            f"# Trading Signal: {signal.action}",
+            "",
+            f"**Ticker:** `{signal.ticker}`  ",
+            f"**Confidence:** {signal.confidence:.1%}  ",
+            f"**Time:** {signal.timestamp.strftime('%Y-%m-%d %H:%M:%S UTC')}",
+            "",
+            "## Reasons",
+            "",
+        ]
+        lines.extend(f"- {reason}" for reason in signal.reasons)
+        return "\n".join(lines).strip()

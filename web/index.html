@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TinyFish Market Sentiment</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <div class="page-shell">
+    <header class="hero">
+      <div class="hero-copy">
+        <p class="eyebrow">TinyFish x OpenAI</p>
+        <h1>Yahoo Finance SG and Bloomberg Asia, turned into a trading call.</h1>
+        <p class="lede">
+          The dashboard now uses TinyFish to extract market news from Yahoo Finance Singapore
+          and Bloomberg Asia, then weighs bullish and bearish evidence to produce a buy,
+          hold, or sell signal.
+        </p>
+      </div>
+      <div class="hero-panel">
+        <div class="hero-stat">
+          <span class="stat-label">Default Scan</span>
+          <strong id="default-tickers">Loading...</strong>
+        </div>
+        <div class="hero-stat">
+          <span class="stat-label">Sources</span>
+          <strong id="source-pill">Loading...</strong>
+        </div>
+        <div class="hero-stat">
+          <span class="stat-label">API Mode</span>
+          <strong id="mode-pill">Loading...</strong>
+        </div>
+      </div>
+    </header>
+
+    <main class="dashboard">
+      <section class="card control-card">
+        <div class="card-header">
+          <p class="section-tag">Run Analysis</p>
+          <h2>Scan the market for a ticker</h2>
+        </div>
+        <form id="analyze-form" class="analyze-form">
+          <label for="tickers" class="input-label">Tickers</label>
+          <div class="input-row">
+            <input id="tickers" name="tickers" type="text" placeholder="AAPL, NVDA, TSLA" autocomplete="off">
+            <button id="submit-button" type="submit">Analyze</button>
+          </div>
+          <p class="helper-text">Comma-separated symbols. The site will gather Yahoo Finance SG and Bloomberg Asia coverage for each.</p>
+        </form>
+        <div class="quick-picks">
+          <button class="chip" data-tickers="AAPL,NVDA,TSLA">Mega Caps</button>
+          <button class="chip" data-tickers="MSFT,GOOGL,AMZN">Platform Leaders</button>
+          <button class="chip" data-tickers="TSM,NVDA,ASML">Semis</button>
+        </div>
+      </section>
+
+      <section class="card result-card">
+        <div class="card-header">
+          <p class="section-tag">Portfolio Call</p>
+          <h2 id="signal-title">No analysis yet</h2>
+        </div>
+        <div id="status-banner" class="status-banner idle">Waiting for your first live scan.</div>
+        <div id="result-grid" class="result-grid hidden">
+          <div class="metric">
+            <span class="metric-label">Action</span>
+            <strong id="signal-action">-</strong>
+          </div>
+          <div class="metric">
+            <span class="metric-label">Confidence</span>
+            <strong id="signal-confidence">-</strong>
+          </div>
+          <div class="metric">
+            <span class="metric-label">Tickers</span>
+            <strong id="signal-tickers">-</strong>
+          </div>
+          <div class="metric">
+            <span class="metric-label">Generated</span>
+            <strong id="signal-time">-</strong>
+          </div>
+        </div>
+        <div class="reasons-panel">
+          <h3>Why the agent chose this</h3>
+          <ul id="reasons-list" class="reasons-list">
+            <li>Run an analysis to see the reasoning here.</li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="card ticker-card">
+        <div class="card-header">
+          <p class="section-tag">Ticker Breakdown</p>
+          <h2>Bullish vs bearish evidence</h2>
+        </div>
+        <div id="ticker-breakdown" class="ticker-breakdown">
+          <p class="empty-state">Run an analysis to inspect the scraped news by ticker.</p>
+        </div>
+      </section>
+
+      <section class="card output-card">
+        <div class="card-header">
+          <p class="section-tag">Structured Output</p>
+          <h2>Signal payload</h2>
+        </div>
+        <pre id="json-output" class="json-output">{
+  "message": "Run an analysis to populate this panel."
+}</pre>
+      </section>
+    </main>
+  </div>
+
+  <script src="/app.js"></script>
+</body>
+</html>

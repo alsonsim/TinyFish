@@ -60,8 +60,12 @@ class SignalGenerator:
         
         # Collect all reasons
         all_reasons = []
+        bullish_points = []
+        bearish_points = []
         for score in sentiment_scores:
             all_reasons.extend(score.reasons)
+            bullish_points.extend(score.bullish_points)
+            bearish_points.extend(score.bearish_points)
         
         # Determine action
         action: Literal["BUY", "SELL", "HOLD"]
@@ -71,16 +75,16 @@ class SignalGenerator:
             action = "BUY"
             confidence = avg_bull
             primary_reasons = [
-                f"Strong bullish sentiment ({avg_bull:.2f})",
-                *all_reasons[:2],
+                f"Bullish news outweighed bearish news ({avg_bull:.2f} vs {avg_bear:.2f})",
+                *(bullish_points[:2] or all_reasons[:2]),
             ]
         
         elif avg_bear > self.bear_threshold and avg_bear > avg_bull:
             action = "SELL"
             confidence = avg_bear
             primary_reasons = [
-                f"Strong bearish sentiment ({avg_bear:.2f})",
-                *all_reasons[:2],
+                f"Bearish news outweighed bullish news ({avg_bear:.2f} vs {avg_bull:.2f})",
+                *(bearish_points[:2] or all_reasons[:2]),
             ]
         
         else:
@@ -88,7 +92,7 @@ class SignalGenerator:
             confidence = 1.0 - abs(avg_bull - avg_bear)  # Confidence in neutral stance
             primary_reasons = [
                 f"Mixed sentiment (Bull: {avg_bull:.2f}, Bear: {avg_bear:.2f})",
-                "Waiting for clearer signals",
+                *(all_reasons[:1] or ["Bullish and bearish headlines are still balanced."]),
             ]
         
         signal = TradingSignal(

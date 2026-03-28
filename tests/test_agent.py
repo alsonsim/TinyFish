@@ -1,10 +1,10 @@
 """Tests for agent orchestration."""
 
 import pytest
-from unittest.mock import AsyncMock, Mock
+from unittest.mock import AsyncMock
 
 from src.agent.core import FinancialAgent
-from src.data.models import TradingSignal
+from src.data.models import CollectionPlan, TradingSignal
 
 
 @pytest.mark.asyncio
@@ -14,7 +14,7 @@ async def test_financial_agent_initialization():
         openai_api_key="test-key",
         tinyfish_key="test-key",
     )
-    
+
     assert agent is not None
     assert agent.planner is not None
     assert agent.executor is not None
@@ -28,10 +28,17 @@ async def test_monitor_sentiment():
         openai_api_key="test-key",
         tinyfish_key="test-key",
     )
-    
-    # Mock the internal methods
+
+    agent.planner.create_plan = AsyncMock(
+        return_value=CollectionPlan(
+            tickers=["AAPL"],
+            priority_sources=["news"],
+            reasoning="Use news sources",
+            parallel_sources=2,
+        )
+    )
     agent._collect_data = AsyncMock(return_value=[
-        {"text": "AAPL stock is going up!", "source": "test"}
+        {"ticker": "AAPL", "text": "AAPL stock is going up!", "source": "test", "stance": "bullish"}
     ])
     agent._analyze_sentiment = AsyncMock(return_value=[])
     agent.signal_generator.generate = AsyncMock(
@@ -42,9 +49,9 @@ async def test_monitor_sentiment():
             reasons=["No data"],
         )
     )
-    
+
     signal = await agent.monitor_sentiment(["AAPL"])
-    
+
     assert signal is not None
     assert signal.ticker == "AAPL"
     assert signal.action in ["BUY", "SELL", "HOLD"]
@@ -57,6 +64,5 @@ async def test_agent_cleanup():
         openai_api_key="test-key",
         tinyfish_key="test-key",
     )
-    
+
     await agent.cleanup()
-    # Should not raise any exceptions

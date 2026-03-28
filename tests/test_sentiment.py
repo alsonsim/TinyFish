@@ -1,51 +1,47 @@
 """Tests for sentiment analysis."""
 
 import pytest
+
 from src.sentiment.analyzer import SentimentAnalyzer
 from src.sentiment.signals import SignalGenerator
 from src.data.models import SentimentScore
 
 
 @pytest.mark.asyncio
-async def test_sentiment_analyzer():
-    """Test sentiment analysis."""
-    analyzer = SentimentAnalyzer(openai_api_key="test-key")
-    
-    # Mock OpenAI response
-    analyzer.client.chat.completions.create = pytest.AsyncMock(
-        return_value=Mock(
-            choices=[
-                Mock(
-                    message=Mock(
-                        content="""
-Bull Score: 0.8
-Bear Score: 0.2
-Sentiment: BULL
-Reasons:
-- Positive news
-- Strong growth
-"""
-                    )
-                )
-            ]
-        )
-    )
-    
+async def test_sentiment_analyzer_heuristic_flow():
+    """Test heuristic sentiment analysis from stance-tagged news."""
+    analyzer = SentimentAnalyzer(openai_api_key=None)
+
     score = await analyzer.analyze_ticker(
         "AAPL",
-        [{"text": "Apple stock soaring!"}],
+        [
+            {
+                "source": "yahoo_finance_sg",
+                "title": "Apple rallies on stronger iPhone demand",
+                "text": "Demand outlook improved after the latest update.",
+                "stance": "bullish",
+                "rationale": "Demand momentum improved",
+            },
+            {
+                "source": "bloomberg_asia",
+                "title": "Apple faces supply chain pressure",
+                "text": "Margins could be pressured by supplier constraints.",
+                "stance": "bearish",
+                "rationale": "Supply chain pressure may weigh on margins",
+            },
+        ],
     )
-    
+
     assert score.ticker == "AAPL"
     assert 0 <= score.bull_score <= 1
     assert 0 <= score.bear_score <= 1
+    assert score.summary
 
 
 def test_signal_generator():
     """Test signal generation logic."""
     generator = SignalGenerator(bull_threshold=0.7, bear_threshold=0.7)
-    
-    # Test that it initializes
+
     assert generator is not None
     assert generator.bull_threshold == 0.7
 
@@ -54,7 +50,7 @@ def test_signal_generator():
 async def test_signal_generation_buy():
     """Test BUY signal generation."""
     generator = SignalGenerator()
-    
+
     scores = [
         SentimentScore(
             ticker="AAPL",
@@ -62,10 +58,13 @@ async def test_signal_generation_buy():
             bear_score=0.2,
             sentiment="BULL",
             reasons=["Strong momentum"],
+            bullish_points=["Yahoo Finance Singapore: demand outlook improved"],
+            bearish_points=[],
+            summary="Bullish headlines dominate.",
         )
     ]
-    
+
     signal = await generator.generate(scores, ["AAPL"])
-    
+
     assert signal.action == "BUY"
     assert signal.confidence > 0.7
